@@ -6,8 +6,10 @@ class Config:
     db_host = os.environ.get('DB_HOST')
     db_name = os.environ.get('DB_NAME')
     
+    import urllib.parse
     if db_user and db_pass and db_host and db_name:
-        db_url = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}"
+        db_pass_encoded = urllib.parse.quote_plus(db_pass)
+        db_url = f"mysql+pymysql://{db_user}:{db_pass_encoded}@{db_host}/{db_name}"
     else:
         db_url = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:0426@127.0.0.1/queue_prod_db'
 
