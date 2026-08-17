@@ -82,13 +82,6 @@ def create_division(current_user):
     db.session.commit()
     return jsonify({'success': True, 'id': division.id})
 
-@admin_bp.route('/divisions/<int:div_id>', methods=['PUT'])
-def update_division(div_id):
-    data = request.json
-    division = Division.query.get_or_404(div_id)
-    if 'tv_id' in data:
-        division.tv_id = data['tv_id']
-    if 'name' in data:
 @admin_bp.route('/divisions/<int:div_id>', methods=['PUT', 'DELETE'])
 @token_required
 def manage_division(current_user, div_id):
