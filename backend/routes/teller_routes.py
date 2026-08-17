@@ -1,5 +1,5 @@
-from flask import Blueprint, request, jsonify
-from auth_middleware import token_required, Response
+from flask import Blueprint, request, jsonify, Response
+from auth_middleware import token_required
 from models import db, Ticket, Purpose, Division
 from datetime import datetime
 import subprocess
