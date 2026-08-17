@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QMS TV Viewer (Legacy)</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f1f5f9;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .header {
+            height: 72px; background: #e2e8f0;
+            border-bottom: 1px solid #94a3b8;
+            display: flex; align-items: center; padding: 0 20px;
+        }
+        .header img {
+            width: 48px; height: 48px; border-radius: 50%; margin-right: 15px;
+        }
+        .header h1 { margin: 0; font-size: 24px; color: #1e293b; text-transform: uppercase; }
+        .content {
+            flex: 1; display: flex; flex-direction: row;
+        }
+        .panel {
+            flex: 1; display: flex; flex-direction: column; padding: 20px;
+        }
+        .now-serving { border-right: 4px solid #94a3b8; background: #e2e8f0; }
+        .in-queue { background: #f8fafc; }
+        h2 { text-align: center; font-size: 36px; margin-top: 0; color: #334155; text-transform: uppercase; }
+        
+        .ticket {
+            background: #fff; border-left: 8px solid #475569;
+            border-radius: 8px; padding: 15px; margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .ticket-number { font-size: 40px; font-weight: bold; margin: 5px 0; color: #0f172a; }
+        .ticket-info { font-size: 18px; color: #334155; }
+        
+        .footer {
+            height: 48px; background: #cbd5e1;
+            border-top: 1px solid #94a3b8;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .clock { font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #1e293b; }
+        
+        /* Overlays */
+        #start-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: flex; align-items: center; justify-content: center;
+            z-index: 1000; cursor: pointer;
+        }
+        #start-overlay button {
+            padding: 20px 40px; font-size: 30px; font-weight: bold;
+            background: #1e293b; color: #fff; border: 2px solid #fff; border-radius: 15px;
+            pointer-events: none;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id="start-overlay">
+        <button id="start-btn">Click Here to Start TV Viewer & Enable Audio</button>
+    </div>
+
+    <div class="header">
+        <h1>Personnel Management Center | QMS</h1>
+    </div>
+
+    <div class="content" id="main-content">
+        <div class="panel now-serving">
+            <h2>Now Serving</h2>
+            <div id="serving-list"></div>
+        </div>
+        <div class="panel in-queue">
+            <h2>In Queue</h2>
+            <div id="queue-list"></div>
+        </div>
+    </div>
+    
+    <div class="footer" id="footer-container" style="display: flex; justify-content: center; align-items: center; padding: 0 40px; box-sizing: border-box;">
+        <div class="clock" id="clock-date" style="flex-shrink: 0;"></div>
+        <marquee id="announcement-marquee" style="flex-grow: 1; margin: 0 40px; color: #1f2937; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; font-size: 28px; display: none;"></marquee>
+        <div class="clock" id="clock-time" style="flex-shrink: 0;"></div>
+    </div>
+
+    <script>
+        var state = { serving: [], inQueue: [], settings: null };
+        var audioEnabled = false;
+        var lastServingId = null;
+        var lastQueueId = null;
+        var initialLoadDone = false;
+        
+        var startOverlay = document.getElementById('start-overlay');
+        startOverlay.onclick = function() {
+            audioEnabled = true;
+            document.getElementById('start-overlay').style.display = 'none';
+            // Play bell sound to verify audio works and unlock audio context
+            var unlock = new Audio('/static/bell.mp3');
+            var p = unlock.play();
+            if (p !== undefined && p.catch) { p.catch(function(){}); }
+            initApp();
+        };
+
+        function updateClock() {
+            var d = new Date();
+            var h = d.getHours(), m = d.getMinutes();
+            if(h < 10) h = '0' + h;
+            if(m < 10) m = '0' + m;
+            
+            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var month = months[d.getMonth()];
+            var date = d.getDate();
+            if (date < 10) date = '0' + date;
+            var year = d.getFullYear();
+            
+            var dateStr = month + " " + date + ", " + year;
+            var timeStr = h + ':' + m;
+            
+            var hasAnnouncement = state.settings && state.settings.announcement && state.settings.announcement.trim() !== '';
+            
+            document.getElementById('clock-date').innerHTML = dateStr;
+            
+            if (hasAnnouncement) {
+                document.getElementById('footer-container').style.justifyContent = 'space-between';
+                var marquee = document.getElementById('announcement-marquee');
+                marquee.style.display = 'block';
+                if (marquee.innerHTML !== state.settings.announcement) {
+                    marquee.innerHTML = state.settings.announcement;
+                }
+                document.getElementById('clock-time').innerHTML = timeStr;
+            } else {
+                document.getElementById('footer-container').style.justifyContent = 'center';
+                document.getElementById('announcement-marquee').style.display = 'none';
+                document.getElementById('clock-time').innerHTML = '<span style="color: #94a3b8; font-weight: normal; margin: 0 10px;">|</span> ' + timeStr;
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function renderTickets(list, containerId) {
+            var html = '';
+            for(var i=0; i<list.length; i++) {
+                var t = list[i];
+                html += '<div class="ticket">';
+                html += '<div style="font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase;">' + t.customer_type + ' &bull; ' + t.division_name + '</div>';
+                html += '<div class="ticket-number">' + t.ticket_number + '</div>';
+                html += '<div class="ticket-info"><strong>' + t.purpose + '</strong>' + (t.customer_name ? ' - ' + t.customer_name : '') + '</div>';
+                html += '</div>';
+            }
+            if(list.length === 0) {
+                html = '<div style="text-align: center; color: #64748b; font-size: 24px; margin-top: 40px;">Empty</div>';
+            }
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        function playAudio(ticketId, type) {
+            if(!audioEnabled) return;
+            try {
+                // Keep references globally to prevent garbage collection in old WebKit
+                window.currentBell = new Audio('/static/bell.mp3');
+                var bp = window.currentBell.play();
+                if (bp !== undefined && bp.catch) { bp.catch(function(e){ console.log(e); }); }
+                
+                // Android 4.4 strictly drops the onended event. Use a generous 2500ms timeout
+                // to ensure the bell finishes completely before playing TTS.
+                setTimeout(function() {
+                    try {
+                        // Add cache-buster to ensure we don't load a cached 404 from the old race-condition bug
+                        window.currentTts = new Audio('/uploads/tts_' + type + '_' + ticketId + '.wav?cb=' + new Date().getTime());
+                        var p = window.currentTts.play();
+                        if (p !== undefined && p.catch) {
+                            p.catch(function(e) { console.log(e); });
+                        }
+                    } catch(err) {
+                        console.log(err);
+                    }
+                }, 2500);
+            } catch(e) {
+                console.log(e);
+            }
+        }
+
+        function fetchState() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/tv/state/1?t=' + new Date().getTime(), true); // Prevent cache
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    state.serving = data.queue.serving;
+                    state.inQueue = data.queue.in_queue;
+                    state.settings = data.settings;
+                    
+                    renderTickets(state.serving, 'serving-list');
+                    renderTickets(state.inQueue, 'queue-list');
+                    
+                    var currentTopId = state.serving.length > 0 ? state.serving[0].id : null;
+                    var currentQueueTopId = state.inQueue.length > 0 ? state.inQueue[state.inQueue.length - 1].id : null;
+                    
+                    if (initialLoadDone) {
+                        if (currentTopId !== null && currentTopId !== lastServingId) {
+                            playAudio(currentTopId, 'serving');
+                        } else if (currentQueueTopId !== null && currentQueueTopId !== lastQueueId) {
+                            playAudio(currentQueueTopId, 'created');
+                        }
+                    }
+                    
+                    lastServingId = currentTopId;
+                    lastQueueId = currentQueueTopId;
+                    initialLoadDone = true;
+                }
+            };
+            xhr.send();
+        }
+
+        function initApp() {
+            fetchState();
+            setInterval(fetchState, 3000); // Poll every 3 seconds instead of using heavy WebSockets
+        }
+    </script>
+</body>
+</html>
