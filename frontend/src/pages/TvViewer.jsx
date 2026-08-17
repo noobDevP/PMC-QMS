@@ -4,8 +4,8 @@ import io from 'socket.io-client';
 import axios from 'axios';
 
 const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-const SOCKET_URL = `http://${hostname}`;
-const API_URL = `http://${hostname}/api/tv`;
+const SOCKET_URL = `${window.location.protocol}//${hostname}`;
+const API_URL = `${window.location.protocol}//${hostname}/api/tv`;
 
 const TicketCard = ({ t, isServing, index, stage }) => {
   if (index === 0) {

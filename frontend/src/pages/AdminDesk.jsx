@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
 const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-const API_URL = `http://${hostname}/api/admin`;
+const API_URL = `${window.location.protocol}//${hostname}/api/admin`;
 
 export default function AdminDesk() {
   const [user, setUser] = useState(null);
@@ -57,7 +57,7 @@ export default function AdminDesk() {
       setSettings(setRes.data);
       const adsRes = await axios.get(`${API_URL}/ads`);
       setAds(adsRes.data);
-      const usersRes = await axios.get(`http://${hostname}/api/auth/users`);
+      const usersRes = await axios.get(`${window.location.protocol}//${hostname}/api/auth/users`);
       setTellers(usersRes.data.filter(u => u.role === 'teller'));
       const divRes = await axios.get(`${API_URL}/divisions`);
       setDivisions(divRes.data);
@@ -128,7 +128,7 @@ export default function AdminDesk() {
     if(!selectedTellerId) return alert('Select a teller');
     if(!window.confirm("Are you sure you want to reset this teller's password?")) return;
     try {
-      await axios.post(`http://${hostname}/api/auth/users/${selectedTellerId}/reset`, { password: newTellerPassword });
+      await axios.post(`${window.location.protocol}//${hostname}/api/auth/users/${selectedTellerId}/reset`, { password: newTellerPassword });
       alert('Password reset successfully!');
       setSelectedTellerId('');
       setNewTellerPassword('');
@@ -165,7 +165,7 @@ export default function AdminDesk() {
   const handleCreatePurpose = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://${hostname}/api/admin/purposes`, newPurpose);
+      await axios.post(`${window.location.protocol}//${hostname}/api/admin/purposes`, newPurpose);
       alert('Purpose created!');
       setNewPurpose({ name: '', division_id: newPurpose.division_id });
       if (newPurpose.division_id) fetchPurposes(newPurpose.division_id);
@@ -174,7 +174,7 @@ export default function AdminDesk() {
 
   const fetchPurposes = async (divisionId) => {
     try {
-      const res = await axios.get(`http://${hostname}/api/kiosk/purposes/${divisionId}`);
+      const res = await axios.get(`${window.location.protocol}//${hostname}/api/kiosk/purposes/${divisionId}`);
       setPurposes(res.data);
     } catch(err) { console.error(err); }
   };
@@ -182,7 +182,7 @@ export default function AdminDesk() {
   const handleDeletePurpose = async (purposeId) => {
     if (!window.confirm("Delete this purpose? Note: It cannot be deleted if there are tickets linked to it.")) return;
     try {
-      await axios.delete(`http://${hostname}/api/admin/purposes/${purposeId}`);
+      await axios.delete(`${window.location.protocol}//${hostname}/api/admin/purposes/${purposeId}`);
       if (newPurpose.division_id) fetchPurposes(newPurpose.division_id);
     } catch (err) {
       alert(err.response?.data?.error || 'Error deleting purpose');
@@ -192,7 +192,7 @@ export default function AdminDesk() {
   const handleCreateTeller = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://${hostname}/api/auth/users`, {
+      await axios.post(`${window.location.protocol}//${hostname}/api/auth/users`, {
         username: newTeller.username,
         password: newTeller.password,
         role: 'teller',
@@ -208,7 +208,7 @@ export default function AdminDesk() {
     if (!selectedTellerId) return alert('Please select a teller first');
     if (!window.confirm("Are you sure you want to completely delete this Teller account?")) return;
     try {
-      await axios.delete(`http://${hostname}/api/auth/users/${selectedTellerId}`);
+      await axios.delete(`${window.location.protocol}//${hostname}/api/auth/users/${selectedTellerId}`);
       alert('Teller deleted successfully');
       setSelectedTellerId('');
       fetchData();

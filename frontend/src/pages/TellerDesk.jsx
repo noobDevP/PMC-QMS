@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
 const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-const API_URL = `http://${hostname}/api/teller`;
-const SOCKET_URL = `http://${hostname}`;
+const API_URL = `${window.location.protocol}//${hostname}/api/teller`;
+const SOCKET_URL = `${window.location.protocol}//${hostname}`;
 
 export default function TellerDesk() {
   const [user, setUser] = useState(null);
@@ -119,7 +119,7 @@ export default function TellerDesk() {
     e.preventDefault();
     if (newPassword !== confirmPassword) return alert("New passwords don't match");
     try {
-      await axios.put(`http://${window.location.hostname}/api/auth/teller/password`, {
+      await axios.put(`${window.location.protocol}//${window.location.hostname}/api/auth/teller/password`, {
         user_id: user.id,
         old_password: oldPassword,
         new_password: newPassword
@@ -161,7 +161,7 @@ export default function TellerDesk() {
   const openRerouteModal = async (ticket) => {
     setRerouteTicket(ticket);
     try {
-      const res = await axios.get(`http://${hostname}/api/kiosk/divisions`);
+      const res = await axios.get(`${window.location.protocol}//${hostname}/api/kiosk/divisions`);
       setRerouteDivisions(res.data.filter(d => d.id !== user.division_id));
       setTargetDivisionId('');
       setTargetPurposes([]);
@@ -180,7 +180,7 @@ export default function TellerDesk() {
       return;
     }
     try {
-      const res = await axios.get(`http://${hostname}/api/kiosk/purposes/${divId}`);
+      const res = await axios.get(`${window.location.protocol}//${hostname}/api/kiosk/purposes/${divId}`);
       setTargetPurposes(res.data);
     } catch (err) {
       console.error(err);

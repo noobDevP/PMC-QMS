@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Building2, UserCircle2, ArrowRight, XCircle } from 'lucide-react';
 
 const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-const API_URL = `http://${hostname}/api/kiosk`;
+const API_URL = `${window.location.protocol}//${hostname}/api/kiosk`;
 
 export default function TabletKiosk() {
   const [divisions, setDivisions] = useState([]);
