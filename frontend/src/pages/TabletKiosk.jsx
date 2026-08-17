@@ -20,7 +20,9 @@ export default function TabletKiosk() {
   const [generatedTicket, setGeneratedTicket] = useState(null);
 
   useEffect(() => {
-    axios.get(`${API_URL}/divisions`).then(res => setDivisions(res.data)).catch(console.error);
+    axios.get(`${API_URL}/divisions`).then(res => {
+      setDivisions(Array.isArray(res.data) ? res.data : []);
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -30,7 +32,9 @@ export default function TabletKiosk() {
 
   useEffect(() => {
     if (selectedDivision) {
-      axios.get(`${API_URL}/purposes/${selectedDivision}`).then(res => setPurposes(res.data)).catch(console.error);
+      axios.get(`${API_URL}/purposes/${selectedDivision}`).then(res => {
+        setPurposes(Array.isArray(res.data) ? res.data : []);
+      }).catch(console.error);
       setSelectedPurpose('');
       setIsPurposeModalOpen(true);
     }
