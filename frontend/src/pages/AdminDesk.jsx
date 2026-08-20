@@ -15,7 +15,8 @@ export default function AdminDesk() {
     periodic_return_timer: 0, 
     ads_interval: 10,
     media_mode: 'ads',
-    youtube_id: ''
+    youtube_id: '',
+    facebook_url: ''
   });
   const [ads, setAds] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
