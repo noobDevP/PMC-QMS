@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
-const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : 'pmc-qms.onrender.com';
 const API_URL = `${window.location.protocol}//${hostname}/api/admin`;
 
 export default function AdminDesk() {
@@ -325,6 +325,11 @@ export default function AdminDesk() {
                     onChange={() => setSettings({...settings, media_mode: 'youtube'})} />
                   <span className="font-bold text-gray-700">YouTube Player</span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="media_mode" checked={settings.media_mode === 'facebook'} 
+                    onChange={() => setSettings({...settings, media_mode: 'facebook'})} />
+                  <span className="font-bold text-gray-700">Facebook Video</span>
+                </label>
               </div>
 
               {settings.media_mode === 'youtube' ? (
@@ -333,6 +338,13 @@ export default function AdminDesk() {
                   <input type="text" placeholder="e.g. dQw4w9WgXcQ" className="border p-2 rounded focus:border-blue-500 outline-none w-full"
                     value={settings.youtube_id || ''} onChange={(e) => setSettings({...settings, youtube_id: e.target.value})} />
                   <p className="text-xs text-gray-500">The video will loop automatically when the screen is idle. Remember to click "Save Settings" above.</p>
+                </div>
+              ) : settings.media_mode === 'facebook' ? (
+                <div className="mb-6 flex flex-col gap-3 border p-4 rounded bg-gray-50">
+                  <label className="text-sm font-bold text-gray-700">Facebook Video / Reel URL</label>
+                  <input type="url" placeholder="https://www.facebook.com/watch/?v=..." className="border p-2 rounded focus:border-blue-500 outline-none w-full"
+                    value={settings.facebook_url || ''} onChange={(e) => setSettings({...settings, facebook_url: e.target.value})} />
+                  <p className="text-xs text-gray-500">Paste the full URL of any public Facebook video or Reel. Remember to click "Save Settings".</p>
                 </div>
               ) : (
                 <>

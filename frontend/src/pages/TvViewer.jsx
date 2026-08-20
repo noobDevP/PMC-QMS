@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
 
-const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : 'pmc-qms.onrender.com';
 const SOCKET_URL = `${window.location.protocol}//${hostname}`;
 const API_URL = `${window.location.protocol}//${hostname}/api/tv`;
 
@@ -284,13 +284,13 @@ export default function TvViewer() {
 
   const queueContainerClass = 
     stage === 1 ? 'w-full h-full flex transition-all duration-700 ease-in-out' :
-    stage === 2 ? 'w-1/4 h-full absolute top-0 left-0 bg-white/95 z-20 shadow-2xl transition-all duration-700 ease-in-out translate-x-0' :
-    'w-1/4 h-full absolute top-0 left-0 bg-white/95 z-20 shadow-2xl transition-all duration-700 ease-in-out -translate-x-full';
+    stage === 2 ? 'w-[35%] h-full absolute top-0 left-0 bg-white/95 z-20 shadow-2xl transition-all duration-700 ease-in-out translate-x-0' :
+    'w-[35%] h-full absolute top-0 left-0 bg-white/95 z-20 shadow-2xl transition-all duration-700 ease-in-out -translate-x-full';
 
   const adContainerClass = 
     stage === 1 ? 'opacity-0 scale-95 pointer-events-none absolute inset-0 transition-all duration-700 ease-in-out z-10' :
-    stage === 2 ? 'opacity-100 scale-100 absolute w-3/4 right-0 h-full transition-all duration-700 ease-in-out z-10' :
-    'opacity-100 scale-100 absolute w-full h-full inset-0 transition-all duration-700 ease-in-out z-10';
+    stage === 2 ? 'opacity-100 scale-100 absolute w-[65%] right-0 h-full transition-all duration-700 ease-in-out z-10 bg-black flex items-center justify-center' :
+    'opacity-100 scale-100 absolute w-full h-full inset-0 transition-all duration-700 ease-in-out z-10 bg-black flex items-center justify-center';
 
   const [activationCountdown, setActivationCountdown] = useState(3);
 
@@ -369,14 +369,14 @@ export default function TvViewer() {
       <div className={adContainerClass}>
         {settings.media_mode === 'youtube' ? (
           settings.youtube_id ? (
-            <div className="w-full h-full bg-black">
+            <div className="w-full max-h-full aspect-[16/10] bg-black flex items-center justify-center mx-auto">
               <iframe
                 ref={iframeRef}
                 src={settings.youtube_id.startsWith('PL') 
                   ? `https://www.youtube.com/embed/videoseries?list=${settings.youtube_id}&autoplay=1&mute=1&controls=0&loop=1&enablejsapi=1`
                   : `https://www.youtube.com/embed/${settings.youtube_id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${settings.youtube_id}&enablejsapi=1`
                 }
-                className="w-full h-full object-cover"
+                className="w-full h-full"
                 allow="autoplay; encrypted-media"
                 frameBorder="0"
               />
@@ -386,10 +386,28 @@ export default function TvViewer() {
               YouTube ID Missing
             </div>
           )
+        ) : settings.media_mode === 'facebook' ? (
+          settings.facebook_url ? (
+            <div className="w-full max-h-full aspect-[16/10] bg-black flex items-center justify-center mx-auto">
+              <iframe
+                src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(settings.facebook_url)}&show_text=0&autoplay=1&mute=1`}
+                className="w-full h-full"
+                style={{ border: 'none', overflow: 'hidden' }}
+                scrolling="no"
+                frameBorder="0"
+                allowFullScreen={true}
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              />
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-900 text-gray-500 text-2xl font-light">
+              Facebook Video URL Missing
+            </div>
+          )
         ) : (
           <>
             {ads.length > 0 && (
-              <div className="w-full h-full bg-black flex items-center justify-center">
+              <div className="w-full max-h-full aspect-[16/10] bg-black flex items-center justify-center mx-auto">
                 {ads[currentAdIndex]?.file_type !== 'video' ? (
                   <img src={`${SOCKET_URL}/uploads/${ads[currentAdIndex].filename}`} className="w-full h-full object-contain" alt="Advertisement" />
                 ) : (
@@ -426,3 +444,4 @@ export default function TvViewer() {
     </div>
   );
 }
+
