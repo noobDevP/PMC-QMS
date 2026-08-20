@@ -14,6 +14,7 @@ class SystemSetting(db.Model):
     announcement = db.Column(db.Text, nullable=True)
     media_mode = db.Column(db.String(20), default='ads')
     youtube_id = db.Column(db.String(100), nullable=True)
+    facebook_url = db.Column(db.String(500), nullable=True)
     
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -32,6 +32,7 @@ def system_settings(current_user):
         setting.periodic_return_mode = data.get('periodic_return_mode', setting.periodic_return_mode)
         setting.media_mode = data.get('media_mode', setting.media_mode)
         setting.youtube_id = data.get('youtube_id', setting.youtube_id)
+        setting.facebook_url = data.get('facebook_url', setting.facebook_url)
         db.session.commit()
         
         from extensions import socketio
@@ -44,7 +45,8 @@ def system_settings(current_user):
             'ads_interval': setting.ads_interval,
             'announcement': setting.announcement,
             'media_mode': setting.media_mode,
-            'youtube_id': setting.youtube_id
+            'youtube_id': setting.youtube_id,
+            'facebook_url': setting.facebook_url
         })
         
         return jsonify({'success': True})
@@ -58,7 +60,8 @@ def system_settings(current_user):
         'ads_interval': setting.ads_interval,
         'announcement': setting.announcement,
         'media_mode': setting.media_mode,
-        'youtube_id': setting.youtube_id
+        'youtube_id': setting.youtube_id,
+        'facebook_url': setting.facebook_url
     })
 
 @admin_bp.route('/divisions', methods=['GET'])
